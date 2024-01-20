@@ -5,7 +5,7 @@
     <artifactId>probes-monitoring</artifactId>
     <version>0.0.1</version>
   </parent>
-  <artifactId>avg-redicer</artifactId>
-  <name>avg-redicer</name>
+  <artifactId>avg-reducer</artifactId>
+  <name>avg-reducer</name>
   <description>reducer average value of probe</description>
 </project>

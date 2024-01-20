@@ -87,6 +87,7 @@
 
 	<modules>
 		<module>analyzer</module>
-		<module>avg-redicer</module>
+		<module>avg-reducer</module>
+		<module>avg-populator</module>
 	</modules>
 </project>
