@@ -19,7 +19,7 @@ import telran.probes.service.AvgValueService;
 public class AvgReducerAppl {
 final AvgValueService providerService;
 final StreamBridge streamBridge;
-@Value("${app.deviation.binding.name:deviation-out-0}")
+@Value("${app.average.binding.name:average-out-0}")
 String deviationBindingName;
 	public static void main(String[] args) {
 		SpringApplication.run(AvgReducerAppl.class, args);
