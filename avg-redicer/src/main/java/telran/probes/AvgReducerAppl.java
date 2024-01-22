@@ -17,27 +17,31 @@ import telran.probes.service.AvgValueService;
 @RequiredArgsConstructor
 @Slf4j
 public class AvgReducerAppl {
-final AvgValueService providerService;
+final AvgValueService avgValueService;
 final StreamBridge streamBridge;
-@Value("${app.average.binding.name:average-out-0}")
-String deviationBindingName;
+@Value("${app.average.binding.name:reduced-out-0}")
+String avgValueBindingName;
 	public static void main(String[] args) {
 		SpringApplication.run(AvgReducerAppl.class, args);
 
 	}
 	
 	@Bean
-	public Consumer<ProbeData> consumerProbeData() {
+	Consumer<ProbeData> consumerProbeDataReducing() { 
 		return this::ConsumerMethod;
 	}
 	
 	private void ConsumerMethod(ProbeData probeData) {
 		log.trace("recived probeData: {}", probeData);
-		Long avgValue = providerService.getAvgValue(probeData);
+		long sensorId = probeData.sensorId();
+		Long avgValue = avgValueService.getAvgValue(probeData);
 		log.debug("avgValue: {}", avgValue);
 		if(!avgValue.equals(null)) {
-			streamBridge.send(deviationBindingName, avgValue);
-			log.debug("average value {} sent to {}", avgValue, deviationBindingName);
+			log.trace("for patient {} avg value is {}", sensorId, avgValue);
+			streamBridge.send(avgValueBindingName, new ProbeData(sensorId, avgValue, System.currentTimeMillis()));
+			log.debug("average value {} sent to {}", avgValue, avgValueBindingName);
+		} else {
+			log.trace("for patient {} no avg value yet", sensorId);
 		}
 		
 		

@@ -31,8 +31,8 @@ class AvgReducerControllerTest {
 	InputDestination producer;
 	@Autowired
 	OutputDestination consumer;
-	String bindingNameProducer = "average-out-0";
-	String bindingNameConsumer = "consumerProbeData-in-0";
+	String bindingNameProducer = "reduced-out-0";
+	String bindingNameConsumer = "consumerProbeDataReducing-in-0";
 	@MockBean
 	AvgValueService avgValueService;
 
@@ -51,8 +51,8 @@ class AvgReducerControllerTest {
 		producer.send(new GenericMessage<ProbeData>(probeData), bindingNameConsumer);
 		Message<byte[]> message = consumer.receive(10, bindingNameProducer);
 		assertNotNull(message);
-		Long actualAvgValue = mapper.readValue(message.getPayload(), Long.class);
-		assertEquals(avgValue, actualAvgValue);
+		ProbeData actualAvgValue = mapper.readValue(message.getPayload(), ProbeData.class);
+		assertEquals(probeData, actualAvgValue);
 	}
 
 }
