@@ -19,7 +19,7 @@ import telran.probes.service.AvgValueService;
 public class AvgReducerAppl {
 final AvgValueService avgValueService;
 final StreamBridge streamBridge;
-@Value("${app.average.binding.name:reduced-out-0}")
+@Value("${app.average.binding.name}")
 String avgValueBindingName;
 	public static void main(String[] args) {
 		SpringApplication.run(AvgReducerAppl.class, args);
@@ -36,7 +36,7 @@ String avgValueBindingName;
 		long sensorId = probeData.sensorId();
 		Long avgValue = avgValueService.getAvgValue(probeData);
 		log.debug("avgValue: {}", avgValue);
-		if(!avgValue.equals(null)) {
+		if(avgValue != null) {
 			log.trace("for patient {} avg value is {}", sensorId, avgValue);
 			streamBridge.send(avgValueBindingName, new ProbeData(sensorId, avgValue, System.currentTimeMillis()));
 			log.debug("average value {} sent to {}", avgValue, avgValueBindingName);

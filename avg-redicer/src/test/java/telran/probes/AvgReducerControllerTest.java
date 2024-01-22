@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.stream.binder.test.InputDestination;
@@ -31,7 +32,8 @@ class AvgReducerControllerTest {
 	InputDestination producer;
 	@Autowired
 	OutputDestination consumer;
-	String bindingNameProducer = "reduced-out-0";
+	@Value("${app.average.binding.name:reduced-out-0}")
+	String bindingNameProducer;
 	String bindingNameConsumer = "consumerProbeDataReducing-in-0";
 	@MockBean
 	AvgValueService avgValueService;
