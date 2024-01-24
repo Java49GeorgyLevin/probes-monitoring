@@ -41,6 +41,7 @@ public class AvgReducerServiceTest {
 	void setUp() {
 		VALUES_NO_AVG = PROBES_LIST_NO_AVG.getValues();
 		VALUES_AVG = PROBES_LIST_AVG.getValues();
+		VALUES_AVG.clear();
 		VALUES_AVG.add(VALUE);
 		mapRedis.put(SENSOR_ID_NO_AVG, PROBES_LIST_NO_AVG);
 		mapRedis.put(SENSOR_ID_AVG, PROBES_LIST_AVG);
@@ -64,10 +65,39 @@ public class AvgReducerServiceTest {
 	}
 	@Test
 	void testNoAvgValue() {
-		//TODO
+		when(probesListRepo.findById(SENSOR_ID_NO_AVG)).thenReturn(Optional.of(PROBES_LIST_NO_AVG));
+		when(probesListRepo.save(PROBES_LIST_NO_AVG)).thenAnswer(invocation -> {
+				mapRedis.put(SENSOR_ID_NO_AVG, invocation.getArgument(0));				
+				return invocation.getArgument(0);
+			}			
+		);
+		Long res = avgValueService.getAvgValue(PROBE_NO_AVG);
+		assertNull(res);
+		ProbesList probesList = mapRedis.get(SENSOR_ID_NO_AVG);
+		assertNotNull(probesList);
+		assertEquals(VALUES_NO_AVG, probesList.getValues());		
+		
 	}
 	@Test
 	void testAvgValue() {
-		//TODO
+		when(probesListRepo.findById(SENSOR_ID_AVG)).thenReturn(Optional.of(PROBES_LIST_AVG));
+		when(probesListRepo.save(PROBES_LIST_AVG)).thenAnswer(invocation -> {
+
+				mapRedis.put(SENSOR_ID_AVG, invocation.getArgument(0));
+				return invocation.getArgument(0);			
+		});
+		
+		assertEquals(VALUE, mapRedis.get(SENSOR_ID_AVG).getValues().get(0));
+		
+		Long res = avgValueService.getAvgValue(PROBE_AVG);
+		assertNotNull(res);
+		assertEquals((long) VALUE, res);
+		ProbesList probesList = mapRedis.get(SENSOR_ID_AVG);
+		
+		assertTrue(mapRedis.get(SENSOR_ID_AVG).getValues().isEmpty());
+		
+		assertNotNull(probesList);
+		assertEquals(PROBES_LIST_AVG, probesList);
+		
 	}
 }
