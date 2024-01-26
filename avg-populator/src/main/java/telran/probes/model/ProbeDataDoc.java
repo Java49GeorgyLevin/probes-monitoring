@@ -3,9 +3,6 @@ package telran.probes.model;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.*;
@@ -13,27 +10,19 @@ import telran.probes.dto.ProbeData;
 
 
 @Document(collection="probe_values")
-@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @ToString
 public class ProbeDataDoc {
-	@Id
 	Long sensorId; 
 	Float value;
 	LocalDateTime timestamp;
 	
-	public static ProbeDataDoc of(ProbeData probeData) {
-	    Instant instant = Instant.ofEpochMilli(probeData.timestamp());
-	    LocalDateTime localDateTime = 
-	    		LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
-		return new ProbeDataDoc(probeData.sensorId(), probeData.value(), localDateTime);
+	public ProbeDataDoc(ProbeData probeData) {
+		Instant instant = Instant.ofEpochMilli(probeData.timestamp());	    		
+	    sensorId = probeData.sensorId();
+	    value = probeData.value();
+	    timestamp = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));	
 	}
-	
-	public ProbeData build() {
-        ZonedDateTime zdt = ZonedDateTime.of(timestamp, ZoneId.systemDefault());
-        long date = zdt.toInstant().toEpochMilli();
-		
-		return new ProbeData(sensorId, value, date);
-	}
-	
+
 }

@@ -30,7 +30,7 @@ public class AvgPopulatorApp {
 	
 	void ConsumeMethod(ProbeData probeData) {
 		log.trace("recieved probeData: {}", probeData);
-		ProbeDataDoc probeDoc = ProbeDataDoc.of(probeData);
+		ProbeDataDoc probeDoc = new ProbeDataDoc(probeData);
 		probeRepo.save(probeDoc);
 		log.debug("probeDataDoc {} saved", probeDoc);
 		}
