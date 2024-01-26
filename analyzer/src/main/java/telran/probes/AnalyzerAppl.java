@@ -27,7 +27,7 @@ String deviationBindingName;
 	}
 
     @Bean
-    public Consumer<ProbeData> consumerProbeData() {
+    Consumer<ProbeData> consumerProbeData() {
 		return this::ConsumeMethod;		
 	};
 	
@@ -37,7 +37,7 @@ String deviationBindingName;
 		SensorRange range = providerService.getSensorRange(sensorId);
 		float value = probeData.value();
 		
-		int border = 0;
+		float border = 0;
 		if(value < range.minValue()) {
 			border = range.minValue();
 		} else if(value > range.maxValue()) {
