@@ -23,8 +23,8 @@ import telran.probes.dto.SensorRange;
 public class SensorRangeProviderServiceImpl implements SensorRangeProviderService {
 	@Getter
 	HashMap<Long, SensorRange> mapRanges = new HashMap<>();
-	@Value("${{app.update.message.delimetr:#}")
-	String delimeter;
+	@Value("${app.update.message.delimiter:#}")
+	String delimiter;
 	@Value("${app.update.token.range:range-update}")
 	String rangeUpdateToken;
 	final SensorRangeProviderConfiguration providerConfiguration;
@@ -44,7 +44,7 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 	
 	private void CheckConfigurationUpdate(String message) {
 		log.debug("recieved message: ", message);
-		String[] tokens = message.split(delimeter);
+		String[] tokens = message.split(delimiter);
 		if(tokens[0].equals(rangeUpdateToken)) {
 			updateMapRanges(tokens[1]);			
 		}		
@@ -54,7 +54,8 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 		Long sensorId = Long.parseLong(sensorIdString);
 		log.debug("long Id: {}", sensorIdString);
 		if(mapRanges.containsKey(sensorId)) {
-			mapRanges.put(sensorId, getRangeFromService(sensorId));
+//? to check logic			mapRanges.put(sensorId, getRangeFromService(sensorId));
+			getRangeFromService(sensorId);
 		}		
 	}
 
