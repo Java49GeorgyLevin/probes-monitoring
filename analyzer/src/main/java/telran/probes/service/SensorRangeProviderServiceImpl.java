@@ -32,7 +32,8 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 
 	@Override
 	public SensorRange getSensorRange(long sensorId) {
-		SensorRange range = mapRanges.get(sensorId);		
+		SensorRange range = mapRanges.get(sensorId);
+		log.debug("sensorId: {}, range from mapRange: {}", sensorId, range);
 		return range == null? getRangeFromService(sensorId) : range;
 	}
 
@@ -41,7 +42,8 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 		return this::CheckConfigurationUpdate;
 	}
 	
-	void CheckConfigurationUpdate(String message) {
+	private void CheckConfigurationUpdate(String message) {
+		log.debug("recieved message: ", message);
 		String[] tokens = message.split(delimeter);
 		if(tokens[0].equals(rangeUpdateToken)) {
 			updateMapRanges(tokens[1]);			
@@ -50,6 +52,7 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 		
 	private void updateMapRanges(String sensorIdString) {
 		Long sensorId = Long.parseLong(sensorIdString);
+		log.debug("long Id: {}", sensorIdString);
 		if(mapRanges.containsKey(sensorId)) {
 			mapRanges.put(sensorId, getRangeFromService(sensorId));
 		}		
