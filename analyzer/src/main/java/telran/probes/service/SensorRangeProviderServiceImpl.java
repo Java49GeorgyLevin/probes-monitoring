@@ -54,17 +54,20 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 		Long sensorId = Long.parseLong(sensorIdString);
 		log.debug("long Id: {}", sensorIdString);
 		if(mapRanges.containsKey(sensorId)) {
-//? to check logic			mapRanges.put(sensorId, getRangeFromService(sensorId));
-			getRangeFromService(sensorId);
+		mapRanges.put(sensorId, getRangeFromService(sensorId));
 		}		
 	}
 
 	private SensorRange getRangeFromService(long sensorId) {
 		SensorRange res = null;
 		try {
-			ResponseEntity<SensorRange> responseEntity =
+			ResponseEntity<?> responseEntity =
 					restTemplate.exchange(getFullUrl(sensorId), HttpMethod.GET, null, SensorRange.class);
-			res = responseEntity.getBody();
+			if(!responseEntity.getStatusCode().is2xxSuccessful()) {
+				throw new Exception((String) responseEntity.getBody());
+			}
+			
+			res = (SensorRange) responseEntity.getBody();
 			mapRanges.put(sensorId, res);
 		} catch (Exception e) {
 			log.error("no sensor range provided for sensor {}, reason: {}",
