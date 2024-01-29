@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "app.sensor.range.provider.default.min",
+    "type": "java.lang.String",
+    "description": "A description for 'app.sensor.range.provider.default.min'"
+  },
+  {
+    "name": "app.sensor.range.provider.default.max",
+    "type": "java.lang.String",
+    "description": "A description for 'app.sensor.range.provider.default.max'"
+  },
+  {
+    "name": "app.update.message.delimiter",
+    "type": "java.lang.String",
+    "description": "A description for 'app.update.message.delimiter'"
+  },
+  {
+    "name": "app.update.token.range",
+    "type": "java.lang.String",
+    "description": "A description for 'app.update.token.range'"
+  }
+]}

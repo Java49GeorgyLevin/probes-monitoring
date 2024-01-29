@@ -5,13 +5,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.stream.binder.test.InputDestination;
@@ -23,125 +24,145 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
 import telran.probes.dto.SensorRange;
-import telran.probes.service.SensorRangeProviderConfiguration;
 import telran.probes.service.SensorRangeProviderService;
-
 @SpringBootTest
-@Slf4j
 @Import(TestChannelBinderConfiguration.class)
 @TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
-public class AnalyzerServiceTest {
+@SuppressWarnings("unchecked")
+class AnalyzerServiceTest {
 	@Autowired
-	InputDestination producer;
-	String bindingNameConsumer = "configChangeConsumer-in-0";
+InputDestination producer;
+	String consumerBindingName = "configChangeConsumer-in-0";
 	@MockBean
 	RestTemplate restTemplate;
 	@Autowired
 	SensorRangeProviderService providerService;
-	@Autowired	
-	SensorRangeProviderConfiguration providerConfiguration;
-	@MockBean
-	HashMap<Long, SensorRange> mapRanges;
-	static Float defaultMin;
-	static Float defaultMax;
-	static SensorRange defaultRange;
-	
 	static final long SENSOR_ID = 123l;
-	static final long SENSOR_ID_NOT_EXISTS = 124l;
+	static final long SENSOR_ID_NOT_FOUND = 124l;
 	private static final float MIN_VALUE = 10;
 	private static final float MAX_VALUE = 20;
-	private static final float MIN_VALUE_UPD = 15;
-	private static final float MAX_VALUE_UPD = 25;
-	static final SensorRange SENSOR_RANGE = new SensorRange(MIN_VALUE, MAX_VALUE); 
-	
-	@PostConstruct 
-	void setup() {
-		defaultMin = providerConfiguration.getMinDefaultValue();
-		defaultMax = providerConfiguration.getMaxDefaultValue();
-		defaultRange = new SensorRange(defaultMin, defaultMax);
-	}
-	
-	@SuppressWarnings("unchecked")
+	static final SensorRange SENSOR_RANGE = new SensorRange(MIN_VALUE, MAX_VALUE);
+	private static final long SENSOR_ID_UNAVAILABLE = 125l;
+	private static final SensorRange SENSOR_RANGE_UPDATED = new SensorRange(MIN_VALUE + 10,
+			MAX_VALUE + 10);
+	private static final String URL = "http://localhost:8282/sensor/range/";
+	@Value("${app.sensor.range.provider.default.min}")
+	float minDefaultValue;
+	@Value("${app.sensor.range.provider.default.max}")
+	float maxDefaultValue;
+	@Value("${app.update.message.delimiter}")
+	String delimiter;
+	@Value("${app.update.token.range}")
+	String rangeUpdateToken;
 	@Test
 	@Order(1)
 	void normalFlowWithNoMapData() {
-		ResponseEntity<SensorRange> responseEntity = new ResponseEntity<>(SENSOR_RANGE, HttpStatus.OK);
-		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(Class.class)))
-		.thenReturn(responseEntity);
+		
+		mockRemoteServiceRequest(SENSOR_RANGE, HttpStatus.OK, SENSOR_ID);
 		SensorRange actual = providerService.getSensorRange(SENSOR_ID);
-		assertEquals(SENSOR_RANGE, actual);		
+		assertEquals(SENSOR_RANGE, actual);
+		
 	}
 	@Test
 	@Order(2)
 	void normalFlowWithMapData() {
+		testNoServiceCalled();
 		SensorRange actual = providerService.getSensorRange(SENSOR_ID);
 		assertEquals(SENSOR_RANGE, actual);
+		
 	}
-	@SuppressWarnings("unchecked")
 	@Test
 	@Order(3)
-	void flowNotFound() {
-		String sensorNotFound = "Sensor Not Found";
-		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(Class.class)))
-		.thenThrow(new RuntimeException(sensorNotFound));
-		SensorRange actual = providerService.getSensorRange(SENSOR_ID_NOT_EXISTS);		
-		assertEquals(defaultRange, actual);
+	void sensorNotFound() {
+		//Test case for default sensor range
+		ResponseEntity<String> responseEntityNotFound =
+				new ResponseEntity<>(String.format("Sensor with id %d not found",
+						SENSOR_ID_NOT_FOUND), HttpStatus.NOT_FOUND);
+		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(),
+				any(Class.class))).thenReturn(responseEntityNotFound);
+		SensorRange actual = providerService.getSensorRange(SENSOR_ID_NOT_FOUND);
+		final SensorRange SENSOR_RANGE_DEFAULT = new SensorRange(minDefaultValue,
+				maxDefaultValue);
+		assertEquals(SENSOR_RANGE_DEFAULT, actual);
+		//Test case for default sensor range doesn't exist in the map
+		ResponseEntity<SensorRange> responseEntity =
+				new ResponseEntity<SensorRange>(SENSOR_RANGE, HttpStatus.OK);
+		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(),
+				any(Class.class))).thenReturn(responseEntity);
+		actual = providerService.getSensorRange(SENSOR_ID_NOT_FOUND);
+		assertEquals(SENSOR_RANGE, actual);
 	}
-	
-	@SuppressWarnings("unchecked")
 	@Test
 	@Order(4)
-	void remoteServiceNotAvalible() {
-		String serviceNotAvalible = "Service Not Avalible";
-//?? why doesn't work when(mapRanges.get(SENSOR_ID)).thenReturn(null)
-		when(mapRanges.get(any())).thenReturn(null);
+	void remoteServiceIsUnavailable() {
+		//Test case for default sensor range
 		
-		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(Class.class)))
-		.thenThrow(new RuntimeException(serviceNotAvalible));
-		SensorRange actual = providerService.getSensorRange(SENSOR_ID_NOT_EXISTS);
-		assertEquals(defaultRange, actual);
+		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(),
+				any(Class.class))).thenThrow(new RuntimeException("Service is unavailable"));
+		SensorRange actual = providerService.getSensorRange(SENSOR_ID_UNAVAILABLE);
+		final SensorRange SENSOR_RANGE_DEFAULT = new SensorRange(minDefaultValue,
+				maxDefaultValue);
+		assertEquals(SENSOR_RANGE_DEFAULT, actual);
+		//Test case for default sensor range doesn't exist in the map
+		ResponseEntity<SensorRange> responseEntity =
+				new ResponseEntity<SensorRange>(SENSOR_RANGE, HttpStatus.OK);
+		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(),
+				any(Class.class))).thenReturn(responseEntity);
+		mockRemoteServiceRequest(SENSOR_RANGE, HttpStatus.OK, SENSOR_ID_UNAVAILABLE);
+		actual = providerService.getSensorRange(SENSOR_ID_UNAVAILABLE);
+		assertEquals(SENSOR_RANGE, actual);
 	}
-	
-	@SuppressWarnings("unchecked")
 	@Test
 	@Order(5)
-	void normalFlowSensorExistingRangeUpdated() {
-		SensorRange updRange = new SensorRange(MIN_VALUE_UPD, MAX_VALUE_UPD);
-		ResponseEntity<SensorRange> responseEntity = new ResponseEntity<>(updRange, HttpStatus.OK);
-		String updateString = "range-update#" + Long.toString(SENSOR_ID);
-		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(Class.class)))
-		.thenReturn(responseEntity);
-				
-		producer.send(new GenericMessage<String>(updateString), bindingNameConsumer);
+	void sensorInMapUpdated() {
+		//test case: In the case a sensor existing in the map has been updated 
+		//there must be remote service call with following updating map
+		mockRemoteServiceRequest(SENSOR_RANGE_UPDATED, HttpStatus.OK, SENSOR_ID);
+		producer.send(new GenericMessage<String>(String.format("%s%s%d",
+				rangeUpdateToken, delimiter, SENSOR_ID)), consumerBindingName);
 		SensorRange actual = providerService.getSensorRange(SENSOR_ID);
-		assertEquals(updRange, actual);		
+		assertEquals(SENSOR_RANGE_UPDATED, actual);
 	}
-	
-	@SuppressWarnings("unchecked")
 	@Test
 	@Order(6)
-	void normalFlowSensorNotExistingRangeUpdated() {
-		String updateString = "range-update#" + Long.toString(SENSOR_ID_NOT_EXISTS);
-		log.debug("string to send: {}", updateString);
-		producer.send(new GenericMessage<String>(updateString), bindingNameConsumer);
+	void sensorNotInMapUpdated() {
+		//test case: In the case a sensor not existing in the map has been updated 
+				//there must not be remote service call 
+		testNoServiceCalled();
+		producer.send(new GenericMessage<String>(String.format("%s%s%d",
+				rangeUpdateToken, delimiter, 100000)), consumerBindingName);
 		
-		String sensorNotFound = "Sensor Not Found";
-		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(Class.class)))
-		.thenThrow(new RuntimeException(sensorNotFound));
-		
-		SensorRange actual = providerService.getSensorRange(SENSOR_ID_NOT_EXISTS);
-		assertEquals(defaultRange, actual);		
-	}	
-	
+	}
 	@Test
 	@Order(7)
-	void normalFlowEmailUpdated() {
-		//? email address 
+	void emailUpdate() {
+		//test case: In the case no sensor has been updated 
+		//there must not be remote service call 
+		testNoServiceCalled();
+		producer.send(new GenericMessage<String>(String.format("%s%s%d",
+				"email", delimiter, SENSOR_ID)), consumerBindingName);
 		
+	}
+	private void mockRemoteServiceRequest(SensorRange sensorRange, HttpStatus status, 
+			long sensorId) {
+		ResponseEntity<SensorRange> responseEntity =
+				new ResponseEntity<SensorRange>(sensorRange, status);
+		when(restTemplate.exchange(URL + sensorId,
+				HttpMethod.GET, null,
+				SensorRange.class)).thenReturn(responseEntity);
 	}
 	
 	
+	private void testNoServiceCalled() {
+		when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(),
+				any(Class.class))).thenAnswer(new Answer<ResponseEntity<?>>() {
+					@Override
+					public ResponseEntity<?> answer(InvocationOnMock invocation) throws Throwable {
+						fail("service shouldn't be called");
+						return null;
+					}
+				});
+	}
+
 }

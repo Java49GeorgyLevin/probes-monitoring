@@ -43,10 +43,10 @@ public class AvgReducerServiceTest {
 	void setUp() {
 		VALUES_NO_AVG = PROBES_LIST_NO_AVG.getValues();
 		VALUES_AVG = PROBES_LIST_AVG.getValues();
-//to down		VALUES_AVG.add(VALUE);
+		VALUES_AVG.add(VALUE);
 		mapRedis.put(SENSOR_ID_NO_AVG, PROBES_LIST_NO_AVG);
 		mapRedis.put(SENSOR_ID_AVG, PROBES_LIST_AVG);
-		VALUES_AVG.add(VALUE);
+		
 	}
 	@Test
 	void testNoRedisRecord() {
