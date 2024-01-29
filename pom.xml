@@ -52,7 +52,7 @@
 		</dependency>
 		<dependency>
 			<groupId>telran.probes.api</groupId>
-			<artifactId>probes-api</artifactId>
+			<artifactId>CW80-probes-api</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
@@ -89,5 +89,7 @@
 		<module>analyzer</module>
 		<module>avg-reducer</module>
 		<module>avg-populator</module>
+		<module>sensor-range-provider</module>
+		<module>email-notifier</module>
 	</modules>
 </project>
