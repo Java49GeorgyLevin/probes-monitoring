@@ -52,7 +52,7 @@
 		</dependency>
 		<dependency>
 			<groupId>telran.probes.api</groupId>
-			<artifactId>CW80-probes-api</artifactId>
+			<artifactId>probes-api</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
