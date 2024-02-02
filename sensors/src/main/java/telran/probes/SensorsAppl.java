@@ -1,9 +1,12 @@
 package telran.probes;
 
+import java.util.function.Supplier;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -16,13 +19,10 @@ import telran.probes.service.SensorsService;
 @SpringBootApplication
 @RequiredArgsConstructor
 @Slf4j
-@EnableScheduling
 public class SensorsAppl {
 	public static final long TIMEOUT = 10000;
 	final SensorsService sensorService;
-	final StreamBridge streamBridge;
-	final SensorsConfiguration sensorConfiguration; 
-	
+	final SensorsConfiguration sensorConfiguration; 	
 	
 	public static void main(String[] args) throws InterruptedException {
 		ConfigurableApplicationContext ctx = SpringApplication.run(SensorsAppl.class, args);
@@ -30,13 +30,16 @@ public class SensorsAppl {
 		ctx.close();
 	}
 	
-	@Scheduled(fixedDelayString = "${app.sensors.fixed-delay:1000}")
-	void sendRandomData() {
+	@Bean
+	Supplier<ProbeData> sensorData() {
+		return this::getRandomProbeData;		
+	}
+	
+	ProbeData getRandomProbeData() {
 		String bindingName = sensorConfiguration.getBindingName();
 		ProbeData probeData = sensorService.getRandomProbeData();
-		streamBridge.send(bindingName, probeData);
 		log.debug("probe data: {} has been sent to {}", probeData, bindingName);
-		
-	}
-
+		return probeData;		
+	};
+	
 }
