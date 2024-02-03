@@ -8,4 +8,10 @@
   <artifactId>sensors</artifactId>
   <name>sensors</name>
   <description>Sensor module of probes-monitoring</description>
+    <dependencies>
+	  <dependency>
+		  <groupId>org.springframework.boot</groupId>
+		  <artifactId>spring-boot-starter-data-mongodb</artifactId>
+	  </dependency>
+  </dependencies>
 </project>
