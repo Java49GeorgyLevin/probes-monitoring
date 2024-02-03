@@ -2,12 +2,14 @@ package telran.probes;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-public class SensorRangesProviderApplication {
+@ComponentScan(basePackages = "telran")
+public class SensorRangesProviderAppl {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SensorRangesProviderApplication.class, args);
+		SpringApplication.run(SensorRangesProviderAppl.class, args);
 	}
 
 }

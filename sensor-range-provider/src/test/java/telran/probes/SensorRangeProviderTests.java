@@ -1,58 +1,78 @@
 package telran.probes;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.UnsupportedEncodingException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.mongodb.MongoTransactionManager;
+import org.springframework.test.web.servlet.MockMvc;
 
-import lombok.RequiredArgsConstructor;
-import telran.probes.controller.SensorsController;
-import telran.probes.dto.RangeParams;
-import telran.probes.dto.Sensor;
-import telran.probes.model.SensorDoc;
-import telran.probes.repo.SensorRepo;
-import telran.probes.service.SensorsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import telran.probes.dto.SensorRange;
+import telran.probes.model.SensorRangeDoc;
+import telran.probes.repo.SensorRangesRepo;
+import telran.probes.service.SensorRangeProviderService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class SensorRangeProviderTests {
 	@Autowired
-	SensorsService sensorsService;
+	SensorRangeProviderService sensors;
 	@Autowired
-	SensorsController sensorsController;
+	MockMvc mockMvc;
 	@Autowired
-	SensorRepo sensorRepo;
-	@MockBean
-	MongoTransactionManager transactionManager;
+	SensorRangesRepo sensorRangesRepo;
+	@Value("${app.sensor.range.provider.url}")
+	String url;
+	String localhost = "http://localhost:8080";
+	static final long SENSOR_ID = 123;
+	private static final float MIN_VALUE = 10;
+	private static final float MAX_VALUE = 100;
+	SensorRangeDoc sensorRangeDoc = new SensorRangeDoc(SENSOR_ID, MIN_VALUE, MAX_VALUE);
+	SensorRange sensorRangeExpected = new SensorRange(MIN_VALUE, MAX_VALUE);
 	
-	Sensor sensor1 = new Sensor(1l, -10, 10, -100f, 100f);
-	Sensor sensor2 = new Sensor(2l, -20, 20, -200f, 200f);
+	@Autowired
+	ObjectMapper mapper;
+	static final long SENSOR_NOT_FOUND_ID = 10000;
+	static final String ERROR_MESSAGE = "sensor " + SENSOR_NOT_FOUND_ID + " not found";
 	
 	@BeforeEach
-	void fillRepo() {
-	sensorRepo.deleteAll();
-	sensorRepo.save(SensorDoc.of(sensor1));
-	sensorRepo.save(SensorDoc.of(sensor2));
+	void setUp() {
+		sensorRangesRepo.save(sensorRangeDoc);
 	}
 	
+	@Test
+	void normalFlowTest() throws Exception {
+		String fullUrl = localhost + url + "/" + SENSOR_ID;		
+		String response = mockMvc.perform(get(fullUrl))
+				.andDo(print()).andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		SensorRange actual = mapper.readValue(response, SensorRange.class);
+		assertEquals(sensorRangeExpected, actual);		
+	}
 	
 	@Test
-	void fieldsNotNull() {		
-		assertFalse(sensorsService.equals(null));
-		assertFalse(sensorsController.equals(null));
-		assertFalse(sensorRepo.equals(null));
+	void errorFlowTest() throws UnsupportedEncodingException, Exception {
+	String fullUrl = localhost + url + "/" + SENSOR_NOT_FOUND_ID;
+	
+	String response = mockMvc.perform(get(fullUrl))
+	.andDo(print()).andExpect(status().isNotFound())
+	.andReturn().getResponse().getContentAsString();
+	
+	assertEquals(ERROR_MESSAGE, response);
+	
 	}
 	
 
-	@Test
-	void getRangeParamsTest() {
-		RangeParams actual = sensorsService.getRangeParams(sensor1.id());
-		System.out.println(String.format("actual: %s", actual));
-	}
+
 
 }
