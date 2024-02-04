@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "sensor-ranges")
+@Document(collection="sensor-ranges")
 @Getter
 @EqualsAndHashCode
 @NoArgsConstructor

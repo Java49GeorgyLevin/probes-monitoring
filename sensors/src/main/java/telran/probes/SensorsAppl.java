@@ -6,6 +6,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import telran.probes.configuration.SensorsConfiguration;
@@ -15,6 +17,7 @@ import telran.probes.service.SensorsService;
 @SpringBootApplication
 @RequiredArgsConstructor
 @Slf4j
+@EnableMongoRepositories(basePackages = {"telran.probes.model", "telran.probes.repo"})
 public class SensorsAppl {
 	public static final long TIMEOUT = 10000;
 	final SensorsService sensorService;
