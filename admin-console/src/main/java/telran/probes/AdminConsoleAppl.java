@@ -10,6 +10,7 @@ public class AdminConsoleAppl {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AdminConsoleAppl.class, args);
+
 	}
 
 }

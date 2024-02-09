@@ -2,6 +2,7 @@ package telran.probes;
 
 import java.util.function.Consumer;
 
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,41 +11,37 @@ import org.springframework.context.annotation.Bean;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import telran.probes.dto.ProbeData;
+import telran.probes.dto.*;
 import telran.probes.service.AvgValueService;
 
 @SpringBootApplication
 @RequiredArgsConstructor
 @Slf4j
 public class AvgReducerAppl {
-final AvgValueService avgValueService;
-final StreamBridge streamBridge;
-@Value("${app.average.binding.name}")
-String avgValueBindingName;
+	final AvgValueService service;
+	final StreamBridge streamBridge;
+	@Value("${app.avg.binding.name}")
+	String bindingName;
 	public static void main(String[] args) {
 		SpringApplication.run(AvgReducerAppl.class, args);
 
 	}
-	
 	@Bean
-	Consumer<ProbeData> consumerProbeDataReducing() { 
-		return this::ConsumerMethod;
+	Consumer<ProbeData> probeConsumerAvg() {
+		return this::processProbeData;
 	}
-	
-	private void ConsumerMethod(ProbeData probeData) {
-		log.trace("recived probeData: {}", probeData);
-		long sensorId = probeData.sensorId();
-		Long avgValue = avgValueService.getAvgValue(probeData);
-		log.debug("avgValue: {}", avgValue);
-		if(avgValue != null) {
-			log.trace("for patient {} avg value is {}", sensorId, avgValue);
-			streamBridge.send(avgValueBindingName, new ProbeData(sensorId, avgValue, System.currentTimeMillis()));
-			log.debug("average value {} sent to {}", avgValue, avgValueBindingName);
+	void processProbeData(ProbeData probe) {
+		log.trace("{}", probe);
+		long sensorId = probe.sensorId();
+		Long avgValue = service.getAvgValue(probe);
+		if (avgValue != null) {
+			log.debug("for sensor {} avg value is {}", sensorId, avgValue);
+			streamBridge.send(bindingName, new ProbeData(sensorId, avgValue,System.currentTimeMillis()));
 		} else {
-			log.trace("for patient {} no avg value yet", sensorId);
+			log.trace("for sensor {} no avg value yet", sensorId);
 		}
 		
 		
 	}
-
+	
 }

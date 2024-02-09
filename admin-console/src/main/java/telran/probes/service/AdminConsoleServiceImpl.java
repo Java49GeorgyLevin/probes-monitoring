@@ -19,13 +19,13 @@ public class AdminConsoleServiceImpl implements AdminConsoleService {
 final SensorEmailsRepo sensorEmailsRepo;
 final SensorRangesRepo sensorRangesRepo;
 final StreamBridge streamBridge;
-@Value("${app.sensors.update.binding.name:sensorsUpdate-out-0}")
+@Value("${app.sensors.update.binding.name}")
 String bindingName;
-@Value("${app.update.token.emails:emails-update}")
+@Value("${app.update.token.emails}")
 String emailsUpdateToken;
-@Value("${app.update.message.delimiter:#}")
+@Value("${app.update.message.delimiter}")
 String delimiter;
-@Value("${app.update.token.range:range-update}")
+@Value("${app.update.token.range}")
 String rangeUpdateToken;
 	@Override
 	public SensorRangeDto updateSensorRange(SensorRangeDto sensorRangeDto) {
@@ -45,13 +45,15 @@ String rangeUpdateToken;
 	private void checkRange(SensorRange sensorRange) {
 		if(sensorRange.maxValue() <= sensorRange.minValue()) {
 			throw new IllegalSensorRangeException();
-		}		
+		}
+		
 	}
 
 	private void sendMessage(String updateToken, Long sensorId) {
 		String message = String.format("%s%s%d", updateToken, delimiter,sensorId);
 		streamBridge.send(bindingName, message);
-		log.debug("message: {} has been sent to {}", message, bindingName);		
+		log.debug("message: {} has been sent to {}", message, bindingName);
+		
 	}
 
 	@Override

@@ -8,8 +8,6 @@
 		<version>0.0.1</version>
 	</parent>
 	<artifactId>avg-populator</artifactId>
-	<name>avg-populator</name>
-	<description>Maven module of probes-monitoring</description>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -19,7 +17,8 @@
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
 			<version>4.11.0</version>
-			<scope>test</scope>			
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 </project>

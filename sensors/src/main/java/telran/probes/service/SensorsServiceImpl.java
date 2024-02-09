@@ -5,7 +5,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import telran.probes.configuration.SensorData;
@@ -18,7 +17,6 @@ import telran.probes.dto.SensorRange;
 @RequiredArgsConstructor
 public class SensorsServiceImpl implements SensorsService{
 	final SensorsConfiguration sensorsConfiguration;
-	
 	@Override
 	public ProbeData getRandomProbeData() {
 		Map<Long, SensorData> sensorsMap = sensorsConfiguration.getSensorsDataMap();

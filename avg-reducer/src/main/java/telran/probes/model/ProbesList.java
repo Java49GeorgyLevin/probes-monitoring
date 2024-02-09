@@ -12,7 +12,6 @@ import lombok.*;
 
 @ToString
 @NoArgsConstructor
-@EqualsAndHashCode(of="sensorId")
 public class ProbesList {
 	@Id
 	long sensorId;
@@ -21,5 +20,21 @@ public class ProbesList {
 		this.sensorId = sensorId;
 		values = new ArrayList<>();
 	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(sensorId);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ProbesList other = (ProbesList) obj;
+		return sensorId == other.sensorId;
+	}
+	
 	
 }

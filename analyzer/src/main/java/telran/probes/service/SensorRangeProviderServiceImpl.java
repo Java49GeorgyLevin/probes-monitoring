@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,8 +14,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import telran.probes.dto.SensorRange;
-
-@Configuration
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,63 +25,55 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 	@Value("${app.update.token.range:range-update}")
 	String rangeUpdateToken;
 	final SensorRangeProviderConfiguration providerConfiguration;
-	final RestTemplate restTemplate; 
-
+	final RestTemplate restTemplate;
 	@Override
 	public SensorRange getSensorRange(long sensorId) {
 		SensorRange range = mapRanges.get(sensorId);
-		log.debug("sensorId: {}, range from mapRange: {}", sensorId, range);
-		return range == null? getRangeFromService(sensorId) : range;
+		
+		return range == null ? getRangeFromService(sensorId) : range;
 	}
-
 	@Bean
 	Consumer<String> configChangeConsumer() {
-		return this::CheckConfigurationUpdate;
+		return this::checkConfigurationUpdate;
 	}
-	
-	private void CheckConfigurationUpdate(String message) {
-		log.debug("recieved message: ", message);
-		String[] tokens = message.split(delimiter);
-		if(tokens[0].equals(rangeUpdateToken)) {
-			updateMapRanges(tokens[1]);			
-		}		
-	}		
+	void checkConfigurationUpdate(String message) {
 		
-	private void updateMapRanges(String sensorIdString) {
-		Long sensorId = Long.parseLong(sensorIdString);
-		log.debug("long Id: {}", sensorIdString);
-		if(mapRanges.containsKey(sensorId)) {
-		mapRanges.put(sensorId, getRangeFromService(sensorId));
-		}		
+		String [] tokens = message.split(delimiter);
+		if(tokens[0].equals(rangeUpdateToken)) {
+			updateMapRanges(tokens[1]);
+		}
 	}
-
-	private SensorRange getRangeFromService(long sensorId) {
-		SensorRange res = null;
+	private void updateMapRanges(String sensorIdStr) {
+		long id = Long.parseLong(sensorIdStr);
+		if (mapRanges.containsKey(id)) {
+			mapRanges.put(id, getRangeFromService(id));
+		}
+		
+	}
+	private SensorRange getRangeFromService(long id) {
+		SensorRange res =null;
 		try {
-			ResponseEntity<?> responseEntity =
-					restTemplate.exchange(getFullUrl(sensorId), HttpMethod.GET, null, SensorRange.class);
+			ResponseEntity<?> responseEntity = 
+			restTemplate.exchange(getFullUrl(id), HttpMethod.GET, null, SensorRange.class);
 			if(!responseEntity.getStatusCode().is2xxSuccessful()) {
 				throw new Exception((String) responseEntity.getBody());
 			}
-			
-			res = (SensorRange) responseEntity.getBody();
-			mapRanges.put(sensorId, res);
+			res = (SensorRange)responseEntity.getBody();
+			mapRanges.put(id, res);
 		} catch (Exception e) {
 			log.error("no sensor range provided for sensor {}, reason: {}",
-					sensorId, e.getMessage());
+					id, e.getMessage());
 			res = getDefaultRange();
 			log.warn("Taken default range {} - {}", res.minValue(), res.maxValue());
 		}
-		log.debug("Range for sensor {} is {}", sensorId, res);
+		log.debug("Range for sensor {} is {}", id, res);
 		return res;
-	}	
-	
+	}
 	private SensorRange getDefaultRange() {
 		
 		return new SensorRange(providerConfiguration.getMinDefaultValue(),
 				providerConfiguration.getMaxDefaultValue());
 	}
-	
 	private String getFullUrl(long id) {
 		String res = String.format("http://%s:%d%s/%d",
 				providerConfiguration.getHost(),

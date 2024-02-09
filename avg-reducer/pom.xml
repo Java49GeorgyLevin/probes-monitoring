@@ -5,13 +5,11 @@
     <artifactId>probes-monitoring</artifactId>
     <version>0.0.1</version>
   </parent>
-  <artifactId>avg-reducer</artifactId>
-  <name>avg-reducer</name>
-  <description>reducer average value of probe</description>
   <dependencies>
 	  <dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-data-redis</artifactId>
 	  </dependency>
   </dependencies>
+  <artifactId>avg-reducer</artifactId>
 </project>

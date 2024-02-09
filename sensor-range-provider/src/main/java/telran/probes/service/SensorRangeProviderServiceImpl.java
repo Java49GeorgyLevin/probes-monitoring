@@ -9,11 +9,10 @@ import telran.probes.dto.SensorRange;
 import telran.probes.model.SensorRangeDoc;
 import telran.probes.repo.SensorRangesRepo;
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class SensorRangeProviderServiceImpl implements SensorRangeProviderService {
-	final SensorRangesRepo sensorRangesRepo;
-
+final SensorRangesRepo sensorRangesRepo;
 	@Override
 	public SensorRange getSensorRange(long sensorId) {
 		SensorRangeDoc res = sensorRangesRepo.findById(sensorId)

@@ -6,7 +6,6 @@
     <version>0.0.1</version>
   </parent>
   <artifactId>email-data-provider</artifactId>
-  <description>Email data provider module.</description>
   <dependencies>
 		<dependency>
 			<groupId>telran.spring</groupId>

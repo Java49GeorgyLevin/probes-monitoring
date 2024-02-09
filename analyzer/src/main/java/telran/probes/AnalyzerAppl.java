@@ -19,38 +19,38 @@ import telran.probes.service.SensorRangeProviderService;
 public class AnalyzerAppl {
 final SensorRangeProviderService providerService;
 final StreamBridge streamBridge;
-@Value("${app.deviation.binding.name:deviation-out-0}")
+@Value("${app.deviation.binding.name}")
 String deviationBindingName;
 	public static void main(String[] args) {
 		SpringApplication.run(AnalyzerAppl.class, args);
 
 	}
-
-    @Bean
-    Consumer<ProbeData> consumerProbeData() {
-		return this::ConsumeMethod;		
-	};
-	
-	void ConsumeMethod(ProbeData probeData) {
-		log.trace("resived probe: {}", probeData);
+	@Bean
+	public Consumer<ProbeData> consumerProbeData() {
+		return this::consumeMethod;
+	}
+	void consumeMethod(ProbeData probeData) {
+		log.trace("received probe: {}", probeData);
 		long sensorId = probeData.sensorId();
 		SensorRange range = providerService.getSensorRange(sensorId);
 		float value = probeData.value();
 		
 		float border = Float.MIN_VALUE;
-		if(value < range.minValue()) {
+		if (value < range.minValue()) {
 			border = range.minValue();
 		} else if(value > range.maxValue()) {
 			border = range.maxValue();
 		}
-		if(border != Float.MIN_VALUE) {
+		if (border != Float.MIN_VALUE) {
 			float deviation = value - border;
 			log.debug("deviation: {}", deviation);
-			ProbeDataDeviation dataDeviation = new ProbeDataDeviation(sensorId, value, deviation, System.currentTimeMillis());
-			streamBridge.send(deviationBindingName, dataDeviation);	
+			ProbeDataDeviation dataDeviation =
+					new ProbeDataDeviation(sensorId, value, deviation, System.currentTimeMillis());
+			streamBridge.send(deviationBindingName, dataDeviation);
 			log.debug("deviation data {} sent to {}", dataDeviation, deviationBindingName);
+			
 		}
-		
 	}
+	
 
 }
