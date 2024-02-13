@@ -40,9 +40,9 @@ services:
     environment:
       - CONFLUENT_API_SECRET=${CONFLUENT_API_SECRET}
       - MONGO_PASSWORD=${MONGO_PASSWORD}
-  avg-reduser:
+  avg-reducer:
     build: 
-      avg-reduser #path with Dockerfile for avg-reduser
+      avg-reducer #path with Dockerfile for avg-reducer
     deploy:
       resources:
         limits:
