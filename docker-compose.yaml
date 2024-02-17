@@ -127,5 +127,7 @@ services:
           memory: 200M
     environment:
       - MONGO_PASSWORD=${MONGO_PASSWORD}
+    ports:
+       - 8989:8989
 
 
