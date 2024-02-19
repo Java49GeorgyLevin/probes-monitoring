@@ -1,5 +1,7 @@
 package telran.probes.security;
 import java.util.Arrays;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -12,15 +14,20 @@ import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import telran.probes.configuration.AdminConsoleConfiguration;
 import telran.security.accounting.dto.AccountDto;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
+	@Value("${app.account.provider.host:localhost}")
+	String host;
+	@Value("${app.account.provider.port:8989}")
+	int port;
+	@Value("${app.account.provider.url:/accounts}")
+	String url;	
 	final RestTemplate restTemplate;
-	final AdminConsoleConfiguration adminConsoleConfiguration;
+	
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -51,10 +58,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	
 	private String getFullUrl(String username) {
 		String res = String.format("http://%s:%d%s/%d",
-				adminConsoleConfiguration.getHost(),
-				adminConsoleConfiguration.getPort(),
-				adminConsoleConfiguration.getUrl(),
-				username);
+				host, port, url, username);
 		log.debug("url:{}", res);
 		return res;
 	}
