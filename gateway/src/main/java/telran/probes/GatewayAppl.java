@@ -6,10 +6,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"telran"})
-public class AccountProviderAppl {
+public class GatewayAppl {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AccountProviderAppl.class, args);
+		SpringApplication.run(GatewayAppl.class, args);
 
 	}
 

@@ -20,6 +20,6 @@ public class Account {
 		return new Account(accountDto.email(), accountDto.password(), accountDto.roles());
 	}
 	public AccountDto build() {
-		return new AccountDto(email, hashPassword, roles);
+		return new AccountDto(email, "********", roles);
 	}
 }

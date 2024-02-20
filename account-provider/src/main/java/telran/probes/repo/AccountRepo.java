@@ -4,6 +4,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import telran.security.accounting.model.Account;
 
-public interface AccountProviderRepo extends MongoRepository<Account, String> {
+public interface AccountRepo extends MongoRepository<Account, String> {
 
 }
