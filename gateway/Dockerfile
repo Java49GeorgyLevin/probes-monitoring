@@ -5,5 +5,5 @@ ENV CONFIG_SERVER_HOST=config-server
 ENV ACCOUNT_PROVIDER_HOST=account-provider
 ENV ADMIN_CONSOLE_HOST=admin-console
 ENV EMAILS_PROVIDER_HOST=email-data-provider
-ENV RANGE_PROVIDER_HOST=range-data-provider
+ENV RANGE_PROVIDER_HOST=sensor-range-provider
 ENTRYPOINT [ "java", "-jar", "app.jar" ]
