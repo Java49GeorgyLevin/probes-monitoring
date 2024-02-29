@@ -17,7 +17,7 @@ spec:
         resources:
           limits:
             memory: "300Mi"
-            cpu: "200m"
+            cpu: "300m"
         env:
         - name: CONFIG_SERVER_HOST
           valueFrom:
