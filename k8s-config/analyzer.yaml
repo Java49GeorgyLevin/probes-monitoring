@@ -17,9 +17,7 @@ spec:
         resources:
           limits:
             memory: "300Mi"
-            cpu: "200m"
-        ports:
-        - containerPort: 8282
+            cpu: "300m"
         env:
         - name: CONFIG_SERVER_HOST
           valueFrom:
@@ -31,14 +29,3 @@ spec:
             secretKeyRef:
               name: pm-secret
               key: confluentIpiSecret
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: analyzer
-spec:
-  selector:
-    app: analyzer
-  ports:
-  - port: 8282
-    targetPort: 8282
