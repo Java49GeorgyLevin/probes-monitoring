@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk-alpine
 COPY ./target/gateway-0.0.1.jar app.jar
-EXPOSE 8080:8080
+EXPOSE 8080
 ENV CONFIG_SERVER_HOST=config-server
 ENV ACCOUNT_PROVIDER_HOST=account-provider
 ENV ADMIN_CONSOLE_HOST=admin-console
