@@ -75,11 +75,14 @@ public class SensorRangeProviderServiceImpl implements SensorRangeProviderServic
 				providerConfiguration.getMaxDefaultValue());
 	}
 	private String getFullUrl(long id) {
-		String res = String.format("http://%s:%d%s/%d",
-				providerConfiguration.getHost(),
-				providerConfiguration.getPort(),
-				providerConfiguration.getUrl(),
-				id);
+		int port = providerConfiguration.getPort();
+		String host = providerConfiguration.getHost();
+		String url = providerConfiguration.getUrl();
+		String res = port != 0 ? String.format("http://%s:%d%s/%d",
+				host,
+				port,
+				url,
+				id) : String.format("https://%s%s/%d", host,url,id);
 		log.debug("url:{}", res);
 		return res;
 	}
