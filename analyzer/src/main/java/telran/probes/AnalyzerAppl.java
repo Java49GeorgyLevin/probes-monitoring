@@ -2,12 +2,11 @@ package telran.probes;
 
 import java.util.function.Consumer;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 
+import com.amazonaws.services.sns.AmazonSNS;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import telran.probes.dto.*;
@@ -18,15 +17,16 @@ import telran.probes.service.SensorRangeProviderService;
 @Slf4j
 public class AnalyzerAppl {
 final SensorRangeProviderService providerService;
-final StreamBridge streamBridge;
-@Value("${app.deviation.binding.name}")
-String deviationBindingName;
+final AmazonSNS snsClient;
+final SnsConfiguration snsConfiguration; 
+
 	public static void main(String[] args) {
 		SpringApplication.run(AnalyzerAppl.class, args);
 
 	}
-	@Bean
-	public Consumer<ProbeData> consumerProbeData() {
+
+    @Bean
+    Consumer<ProbeData> consumerProbeData() {
 		return this::consumeMethod;
 	}
 	void consumeMethod(ProbeData probeData) {
@@ -46,11 +46,17 @@ String deviationBindingName;
 			log.debug("deviation: {}", deviation);
 			ProbeDataDeviation dataDeviation =
 					new ProbeDataDeviation(sensorId, value, deviation, System.currentTimeMillis());
-			streamBridge.send(deviationBindingName, dataDeviation);
-			log.debug("deviation data {} sent to {}", dataDeviation, deviationBindingName);
 			
+			String arn = snsConfiguration.getTopicArn();
+			String message = getMessage(dataDeviation);
+			String subject = "sensor " + sensorId;
+			snsClient.publish(arn, message, subject);
+			log.debug("deviation data {} sent to aws topic {}", dataDeviation, arn);			
 		}
 	}
-	
+	private String getMessage(ProbeDataDeviation dataDeviation) {		
+		return String.format("sensor %d, value is %f, deviation is %f",
+				dataDeviation.sensorId(), dataDeviation.value(), dataDeviation.deviation());
+	}
 
 }
